@@ -8,3 +8,110 @@
     summary: "High incoming MQTT connect rate"
     description: "High number of incoming connects on {{ $labels.hostname }}"
     current_value: '{{ printf "%.0f" $value }}'
+    
+- alert: HiveMQClusterNodeCountMismatch
+  expr: com_hivemq_cluster_nodes_count != 32
+  for: 1m
+  labels:
+    severity: critical
+    scope: cluster
+    hostname: "hivemq-cluster"
+  annotations:
+    summary: "HiveMQ cluster node count mismatch"
+    description: "Expected 33 nodes, but cluster reports {{ $value }}"
+    current_value: '{{ printf "%.0f" $value }}'
+    
+  - alert: HiveMQJvmHeapCritical
+    expr: |
+      (com_hivemq_jvm_memory_heap_used
+       / com_hivemq_jvm_memory_heap_max) * 100 > 85
+    for: 5m
+    labels:
+      severity: critical
+      scope: node
+    annotations:
+      summary: "HiveMQ JVM heap critically high"
+      description: "JVM heap usage > 85% on {{ $labels.hostname }}"
+      current_value: '{{ printf "%.0f" $value }}'
+groups:
+- name: hivemq-core-alerts
+  rules:
+
+  # =====================================================
+  # 1️⃣ HiveMQ Node Down
+  # =====================================================
+  - alert: HiveMQNodeDown
+    expr: up{job="hivemq"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      scope: node
+    annotations:
+      summary: "HiveMQ node is down"
+      description: "HiveMQ node {{ $labels.hostname }} is unreachable"
+      current_value: "0"
+
+
+  # =====================================================
+  # 2️⃣ HiveMQ Cluster Node Count Mismatch
+  # =====================================================
+  - alert: HiveMQClusterNodeCountMismatch
+    expr: com_hivemq_cluster_nodes_count != 33
+    for: 1m
+    labels:
+      severity: critical
+      scope: cluster
+      hostname: "hivemq-cluster"
+    annotations:
+      summary: "HiveMQ cluster node count mismatch"
+      description: "Expected 33 nodes, but cluster reports {{ $value }}"
+      current_value: '{{ printf "%.0f" $value }}'
+
+
+  # =====================================================
+  # 3️⃣ High Incoming MQTT Connects (Per Node)
+  # =====================================================
+  - alert: HiveMQHighIncomingConnects
+    expr: increase(com_hivemq_messages_incoming_connect_count[1m]) > 500
+    for: 2m
+    labels:
+      severity: warning
+      scope: node
+    annotations:
+      summary: "High incoming MQTT connect rate"
+      description: "High number of incoming connects on {{ $labels.hostname }}"
+      current_value: '{{ printf "%.0f" $value }}'
+
+
+  # =====================================================
+  # 4️⃣ JVM Heap Usage – WARNING (Per Node)
+  # =====================================================
+  - alert: HiveMQJvmHeapHigh
+    expr: |
+      (com_hivemq_jvm_memory_heap_used
+       / com_hivemq_jvm_memory_heap_max) * 100 > 75
+    for: 10m
+    labels:
+      severity: warning
+      scope: node
+    annotations:
+      summary: "HiveMQ JVM heap usage high"
+      description: "JVM heap usage > 75% on {{ $labels.hostname }}"
+      current_value: '{{ printf "%.0f" $value }}'
+
+
+  # =====================================================
+  # 5️⃣ JVM Heap Usage – CRITICAL (Per Node)
+  # =====================================================
+  - alert: HiveMQJvmHeapCritical
+    expr: |
+      (com_hivemq_jvm_memory_heap_used
+       / com_hivemq_jvm_memory_heap_max) * 100 > 85
+    for: 5m
+    labels:
+      severity: critical
+      scope: node
+    annotations:
+      summary: "HiveMQ JVM heap critically high"
+      description: "JVM heap usage > 85% on {{ $labels.hostname }}"
+      current_value: '{{ printf "%.0f" $value }}'
