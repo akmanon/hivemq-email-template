@@ -12,3 +12,32 @@ receivers:
   webhook_configs:
   - url: "http://jump-vm:8080/alerts"
     send_resolved: true
+
+
+[Unit]
+Description=Alertmanager
+After=network-online.target
+
+[Service]
+ExecStart=/opt/alertmanager/alertmanager \
+  --config.file=/opt/alertmanager/alertmanager.yml \
+  --storage.path=/opt/alertmanager/data
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+
+[Unit]
+Description=HiveMQ Alert Webhook Logger
+After=network-online.target
+
+[Service]
+ExecStart=/usr/local/bin/hivemq-alert-logger
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
