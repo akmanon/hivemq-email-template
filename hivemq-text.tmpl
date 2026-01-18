@@ -1,0 +1,15 @@
+{{ define "hivemq.email.text" }}
+HiveMQ Alert Notification
+
+Status: {{ .Status }}
+Cluster: {{ .CommonLabels.cluster }}
+
+{{ range .Alerts -}}
+----------------------------------------
+Alert: {{ .Labels.alertname }}
+Host: {{ .Labels.hostname }}
+Severity: {{ .Labels.severity }}
+Started: {{ .StartsAt }}
+Description: {{ .Annotations.description }}
+{{ end }}
+{{ end }}
