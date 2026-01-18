@@ -1,0 +1,14 @@
+templates:
+  - "/opt/alertmanager/templates/*.tmpl"
+
+receivers:
+- name: hivemq-email-and-log
+  email_configs:
+  - to: "oncall@company.com"
+    html: '{{ template "hivemq.email.html" . }}'
+    text: '{{ template "hivemq.email.text" . }}'
+    send_resolved: true
+
+  webhook_configs:
+  - url: "http://jump-vm:8080/alerts"
+    send_resolved: true
