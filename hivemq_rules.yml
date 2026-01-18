@@ -1,0 +1,10 @@
+- alert: HiveMQHighIncomingConnects
+  expr: delta(com_hivemq_messages_incoming_connect_count[1m]) > 500
+  for: 2m
+  labels:
+    severity: warning
+    scope: node
+  annotations:
+    summary: "High incoming MQTT connect rate"
+    description: "High number of incoming connects on {{ $labels.hostname }}"
+    current_value: '{{ printf "%.0f" $value }}'
